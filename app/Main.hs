@@ -1,10 +1,30 @@
 module Main (main) where
 
 import Codec.Picture
+import System.Environment 
+import System.Environment (getArgs)
+import System.Exit (die)
+
+data Config  = Config {
+    imagePath :: FilePath
+} deriving Show
+
 
 main :: IO ()
 main = do
-  result <- readImage "./app/something2.jpg"
+
+  args <- getArgs
+
+  path <- case args of 
+    (firstArg : _) -> return firstArg
+    []             -> die "Error: specify the image path!"
+
+  let cfg = Config { imagePath = path}
+
+  result <- readImage path 
+
+
+--   putStrLn ("Provided image path: " ++ imagePath cfg)
 
   case result of
     Left err ->
