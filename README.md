@@ -1,5 +1,5 @@
 image to ascii converter.
 
-`cabal run` - to run the program
+`cabal run image-viewer  -- ./app/something2.jpg --width 80` - to run the program
 
-TODO: add width argument
+TODO: apply `width` argument

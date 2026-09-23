@@ -15,6 +15,8 @@ main :: IO ()
 main = do
     args <- getArgs
 
+    -- check for the correctness of passed arugments
+
     (path, targetWidth) <- case args of
         (firstArg : "--width" : amount : _) ->
             case readMaybe amount of
@@ -43,23 +45,30 @@ main = do
     case result of
         Left err ->
             putStrLn err
-        Right image ->
+
+        Right image -> do
             let imgWidth = dynWidth image
                 imgHeight = dynHeight image
-                rgbImage = convertRGB8 image
 
-                pixels =
-                    map
-                        ( \y ->
-                            map
-                                (\x -> pixelAt rgbImage x y)
-                                [0 .. imgWidth - 1]
-                        )
-                        [0 .. imgHeight - 1]
+            if targetWidth > imgWidth
+                then die "Error: target width cannot be greater than thhe original image width!"
+                else do
+                    let rgbImage = convertRGB8 image
+                        stepX = imgWidth `div` targetWidth
+                        targetHeight = (imgHeight `div` stepX) `div` 2 --28
+                        stepY = imgHeight `div` targetHeight
+                        xs = map
+                            (\x -> x * stepX)
+                            [0 .. targetWidth - 1]
+                        ys = map (\y -> y * stepY) [0 .. targetHeight - 1]
 
-                brightnessList = map (map brightness) pixels
-                charsList = map (map toChar) brightnessList
-             in writeFile "./output.txt" (unlines charsList)
+                        pixels = map (\y -> map (\x -> pixelAt rgbImage x y) xs)
+                                ys
+
+                        brightnessList = map (map brightness) pixels
+                        charsList = map (map toChar) brightnessList
+
+                    writeFile "./output.txt" (unlines charsList)
 
 dynWidth :: DynamicImage -> Int
 dynWidth img = dynamicMap imageWidth img
