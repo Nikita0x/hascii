@@ -55,7 +55,7 @@ main = do
                 else do
                     let rgbImage = convertRGB8 image
                         stepX = imgWidth `div` targetWidth
-                        targetHeight = (imgHeight `div` stepX) `div` 2 --28
+                        targetHeight = (imgHeight `div` stepX) `div` 2
                         stepY = imgHeight `div` targetHeight
                         xs = map
                             (\x -> x * stepX)
