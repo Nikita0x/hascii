@@ -1,8 +1,11 @@
-image to ascii converter.
+# Hascii
 
-`cabal run image-viewer  -- ./app/something2.jpg --width 80` - to run the program
+An image to ASCII converter - written in Haskell.
 
-TODO: apply `width` argument
+## How to use
+
+`cabal run hascii  -- ./app/something2.jpg --width 80`
+
 
 ```
 

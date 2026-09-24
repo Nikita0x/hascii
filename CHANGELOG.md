@@ -1,4 +1,4 @@
-# Revision history for image-viewer
+# Revision history for hascii
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
