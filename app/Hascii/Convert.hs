@@ -9,17 +9,26 @@ dynWidth img = dynamicMap imageWidth img
 dynHeight :: DynamicImage -> Int
 dynHeight img = dynamicMap imageHeight img
 
-imageToAscii :: DynamicImage -> Int -> Either String String
-imageToAscii image width =
+imageToAscii :: DynamicImage -> Maybe Int -> Either String String
+imageToAscii image maybeWidth =
     let imgWidth = dynWidth image
         imgHeight = dynHeight image
+
+        width = case maybeWidth of
+            Just w  -> w
+            Nothing -> imgWidth
+
     in
         if width > imgWidth
             then Left "Error: target width cannot be greater than the original image width!"
             else
                 let rgbImage = convertRGB8 image
                     stepX = imgWidth `div` width
-                    targetHeight = (imgHeight `div` stepX) `div` 2
+
+                    targetHeight = case maybeWidth of
+                        Just _  -> (imgHeight `div` stepX) `div` 2
+                        Nothing -> imgHeight
+
                     stepY = imgHeight `div` targetHeight
 
                     xs = map

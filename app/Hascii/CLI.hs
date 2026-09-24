@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fmax-pmcheck-models=1000 #-}
+
 module Hascii.CLI where
 
 import           System.Environment (getArgs)
@@ -9,7 +11,7 @@ data Config = Config
     {
       imagePath   :: FilePath,
       outputPath  :: FilePath,
-      targetWidth :: Int
+      targetWidth :: Maybe Int
     } deriving (Show)
 
 
@@ -19,13 +21,13 @@ parseArgs = do
     args <- getArgs
 
     case args of
-        (firstArg : "--width" : amount : "--output" : outPath : _) ->
+        [image , "--width" , amount , "--output" , outPath] ->
             case readMaybe amount of
                 Just width
                     | width > 0 ->
                         return Config
-                            { imagePath = firstArg
-                            , targetWidth = width
+                            { imagePath = image
+                            , targetWidth = Just width
                             , outputPath = outPath
                             }
 
@@ -35,13 +37,13 @@ parseArgs = do
                 Nothing ->
                     die "Error: width must be an integer!"
 
-        (firstArg : "--width" : amount : _) ->
+        [image, "--width", amount] ->
             case readMaybe amount of
                 Just width
                     | width > 0 ->
                         return Config
-                            { imagePath = firstArg
-                            , targetWidth = width
+                            { imagePath = image
+                            , targetWidth = Just width
                             , outputPath = "./output.txt"
                             }
 
@@ -51,13 +53,20 @@ parseArgs = do
                 Nothing ->
                     die "Error: width must be an integer!"
 
-        [] ->
-            putStrLn helpMessage >> exitSuccess
-
         ["--help"] ->
             putStrLn helpMessage >> exitSuccess
 
         ["-h"] ->
+            putStrLn helpMessage >> exitSuccess
+
+        [firstArg] ->
+            return Config
+            { imagePath = firstArg
+            , targetWidth = Nothing
+            , outputPath = "./output.txt"
+            }
+
+        [] ->
             putStrLn helpMessage >> exitSuccess
 
         _ ->

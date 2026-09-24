@@ -20,7 +20,7 @@ main = do
             putStrLn err
 
         Right image -> do
-            case imageToAscii image (targetWidth config) of
+            case imageToAscii image config.targetWidth of
                 Left err ->
                     die err
 
