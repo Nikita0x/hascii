@@ -6,6 +6,9 @@ An image to ASCII converter - written in Haskell.
 
 `cabal run hascii  -- ./app/something2.jpg --width 80`
 
+## TODO
+- Allow to specify directories in the `--output` path - with checking if directory and the file exists. If yes, then termiante with error, else create
+- Ability to pass arguments in any order
 
 ```
 
