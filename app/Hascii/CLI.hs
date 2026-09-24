@@ -1,7 +1,7 @@
 module Hascii.CLI where
 
 import           System.Environment (getArgs)
-import           System.Exit        (die)
+import           System.Exit        (die, exitSuccess)
 import           Text.Read          (readMaybe)
 
 
@@ -52,7 +52,30 @@ parseArgs = do
                     die "Error: width must be an integer!"
 
         [] ->
-            die "Error: specify the image path!"
+            putStrLn helpMessage >> exitSuccess
+
+        ["--help"] ->
+            putStrLn helpMessage >> exitSuccess
+
+        ["-h"] ->
+            putStrLn helpMessage >> exitSuccess
 
         _ ->
-            die "Error: invalid arguments"
+            die "Error: invalid arguments!"
+
+
+
+
+helpMessage :: String
+helpMessage =
+    unlines
+        [ "Hascii - image to ASCII converter"
+        , ""
+        , "Usage:"
+        , "  hascii IMAGE --width WIDTH"
+        , ""
+        , "Options:"
+        , "  --width WIDTH       Output width"
+        , "  --output PATH       Output file"
+        , "  --help, -h          Show this help"
+        ]
