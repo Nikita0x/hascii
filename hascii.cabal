@@ -64,6 +64,8 @@ executable hascii
     other-modules:
         Hascii.ASCII
         Hascii.CLI
+        Hascii.Output
+        Hascii.Convert
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
