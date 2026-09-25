@@ -7,6 +7,7 @@ An image to ASCII converter - written in Haskell.
 `cabal run hascii  -- ./app/something2.jpg --width 80`
 
 ## TODO
+- Need to factor out this and most importantly - understand how exactly the image is produced
 - Ability to pass arguments in any order
 
 ```
