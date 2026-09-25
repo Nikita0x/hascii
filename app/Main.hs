@@ -10,7 +10,6 @@ import           System.Exit    (die)
 
 main :: IO ()
 main = do
-
     config <- parseArgs
 
     result <- readImage config.imagePath
@@ -24,5 +23,6 @@ main = do
                 Left err ->
                     die err
 
-                Right ascii ->
+                Right ascii -> do
                     writeOutput config.outputPath ascii
+                    imageToPng image config.targetWidth "output.png"
