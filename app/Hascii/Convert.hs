@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedRecordDot #-}
+
 module Hascii.Convert where
 
 import           Codec.Picture
@@ -9,14 +11,69 @@ dynWidth img = dynamicMap imageWidth img
 dynHeight :: DynamicImage -> Int
 dynHeight img = dynamicMap imageHeight img
 
+pixelInfoToColoredGlyph :: PixelInfo -> ColoredGlyph
+pixelInfoToColoredGlyph input =
+    let char = toChar (brightnessValue input)
+        form = glyph char
+    in map (map (\x -> (x, pixel input))) form
+
+
+{-|
+Принимает два глифа и объединяет их построчно.
+
+glyph '*' =
+    [ "   ##   "
+    , "## ## ##"
+    , " #####  "
+    , "  ##### "
+    , " #####  "
+    , "## ## ##"
+    , "   ##   "
+    , "        "
+    ]
+
+glyph '+' =
+    [ "   ##   "
+    , "   ##   "
+    , "   ##   "
+    , "########"
+    , "########"
+    , "   ##   "
+    , "   ##   "
+    , "   ##   "
+    ]
+
+Результат:
+
+"   ##      ##   "
+"## ## ##   ##   "
+" #####     ##   "
+"  ##### ########"
+" #####  ########"
+"## ## ##   ##   "
+"   ##      ##   "
+"           ##   "
+-}
 combineGlyphs :: Glyph -> Glyph -> Glyph
 combineGlyphs glyph1 glyph2 =
+    -- zipWith - возвращает ОДИН список
+    -- Принимает 3 аргумента - функцию и 2 списка
+    -- Возьми первый элемент из glyph1 и первый элемент из glyph2, примени к ним (++). Потом второй и второй. Потом третий и третий...
+    -- zipWith (+) [1, 2, 3] [10, 20, 30]
     zipWith (++) glyph1 glyph2
+
+combineColoredGlyphs :: ColoredGlyph -> ColoredGlyph -> ColoredGlyph
+combineColoredGlyphs = zipWith (++)
 
 combineGlyphRow :: [Glyph] -> Glyph
 combineGlyphRow (firstGlyph : restGlyphs) =
     foldl combineGlyphs firstGlyph restGlyphs
 combineGlyphRow [] = []
+
+combineColoredGlyphRow :: [ColoredGlyph] -> ColoredGlyph
+combineColoredGlyphRow (firstGlyph : restGlyphs) =
+    foldl combineColoredGlyphs firstGlyph restGlyphs
+combineColoredGlyphRow [] = []
 
 glyphToImage :: Glyph -> Image PixelRGB8
 glyphToImage glyph =
@@ -32,11 +89,34 @@ writeGlyphPng :: FilePath -> Glyph -> IO ()
 writeGlyphPng path glyph =
     writePng path (glyphToImage glyph)
 
+coloredGlyphToImage :: ColoredGlyph -> Image PixelRGB8
+coloredGlyphToImage glyph =
+    generateImage pixelAt' width height
+  where
+    height = length glyph
+    width  = length (head glyph)
+
+    pixelAt' x y =
+        let (char, color) = (glyph !! y) !! x
+        in if char == ' '
+            then PixelRGB8 255 255 255
+            else color
+
+writeColoredGlyphPng :: FilePath -> ColoredGlyph -> IO ()
+writeColoredGlyphPng path glyph =
+    writePng path (coloredGlyphToImage glyph)
+
+{-|
+Функция отвечает за цвет глифа.
+Принимает Символ и возвращает Цвет RGB (Pixel)
+Если пробел - то белый цвет
+Все остальное - черный
+-}
 glyphToPixel :: Char -> PixelRGB8
 glyphToPixel ' ' = PixelRGB8 255 255 255
 glyphToPixel _   = PixelRGB8 0 0 0
 
-imageToGlyph :: DynamicImage -> Maybe Int -> Either String Glyph
+imageToGlyph :: DynamicImage -> Maybe Int -> Either String ColoredGlyph
 imageToGlyph image maybeWidth =
     let imgWidth = dynWidth image
         imgHeight = dynHeight image
@@ -71,10 +151,11 @@ imageToGlyph image maybeWidth =
                         ys
 
                     brightnessList = map (map brightness) pixels
-                    charsList = map (map toChar) brightnessList
+                    charsList = map (map (\x -> toChar x.brightnessValue )) brightnessList
 
-                    glyphs = map (map glyph) charsList
-                    combinedGlyphs = map combineGlyphRow glyphs
+                    glyphs = map (map pixelInfoToColoredGlyph) brightnessList
+                    --         map снимает один уровень списка, было [[Glyph]], стало [Glyph]
+                    combinedGlyphs = map combineColoredGlyphRow glyphs
 
                 in Right (concat combinedGlyphs)
 
@@ -113,7 +194,7 @@ imageToAscii image maybeWidth =
                         ys
 
                     brightnessList = map (map brightness) pixels
-                    charsList = map (map toChar) brightnessList
+                    charsList = map (map (\x -> toChar x.brightnessValue )) brightnessList
 
                 in Right (unlines charsList)
 
@@ -123,4 +204,4 @@ imageToPng image maybeWidth pngPath =
         Left err ->
             putStrLn err
         Right finalGlyph ->
-            writeGlyphPng pngPath finalGlyph
+            writeColoredGlyphPng pngPath finalGlyph
